@@ -22,6 +22,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -247,28 +251,43 @@ public class ArticleDetailFragment extends Fragment implements
                         outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
                         + mCursor.getString(ArticleLoader.Query.AUTHOR)
                                 + "</font>"));
-
             }
+
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            // uncomment to test the animation
+            //bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />").substring(0, 300)));
+
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
-                            mContainer.setAlpha(0);
-                            loader.setAlpha(1);
 
-                            mContainer.setVisibility(View.VISIBLE);
-                            loader.setVisibility(View.GONE);
 
-                            loader.animate().alpha(0);
-                            mContainer.animate().alpha(1);
+                            // animation
+                            //mContainer.animate().alpha(1).setDuration(500).start();
+                            //mContainer.setAlpha(0);
+
+
+
                             if (bitmap != null) {
                                 Palette p = Palette.from(bitmap).generate();
                                 mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
                                 metaBar.setBackgroundColor(mMutedColor);
                                 bodyView.setTextColor(mMutedColor);
+
+                                AnimationSet set = new AnimationSet(false);
+                                Animation animation = AnimationUtils.loadAnimation(getActivity().getApplicationContext(), android.R.anim.slide_in_left);
+                                Animation animation1 = new AlphaAnimation(0.0f, 1.0f);
+                                animation1.setDuration(500);
+                                animation1.setFillAfter(true);
+                                set.addAnimation(animation);
+                                //set.addAnimation(animation1);
+                                mContainer.setVisibility(View.VISIBLE);
+                                loader.setVisibility(View.GONE);
+                                mContainer.startAnimation(set);
+
                                 updateStatusBar();
                             }
                         }
